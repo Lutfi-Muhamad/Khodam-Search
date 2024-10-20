@@ -31,7 +31,7 @@ if (isset($_POST['query']) && !empty($_POST['query'])) {
     $imageToShow = $_SESSION['randomImage'] ?? 'assets/default.jpg';
 
     // Menyusun teks khodam
-    $khodamText = htmlspecialchars($query) . " khodam yang ada pada kamu adalah:";
+    $khodamText = htmlspecialchars($query) . " khodam yang ada didalam diri kamu adalah:";
 
     // Setel flag modal untuk menampilkan modal setelah pemilihan gambar
     $showModal = true;
@@ -160,8 +160,8 @@ if (isset($_POST['query']) && !empty($_POST['query'])) {
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <div id="loading" class="loading">Loading...</div> <!-- Elemen loading -->
-            <img id="modalImage" src="" alt="Gambar Khodam" style="width: 100%; height: auto; display: none;"> <!-- Gambar disembunyikan awalnya -->
             <p id="khodamText" style="display: none;"></p> <!-- Teks khodam disembunyikan awalnya -->
+            <img id="modalImage" src="" alt="Gambar Khodam" style="width: 100%; height: auto; display: none;"> <!-- Gambar disembunyikan awalnya -->
         </div>
     </div>
 

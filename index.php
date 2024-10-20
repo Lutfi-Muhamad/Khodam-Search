@@ -14,25 +14,23 @@
   <style>
     body {
       margin: 0;
-      /* Menghapus margin agar tidak ada ruang putih */
       height: 100vh;
-      /* Mengatur tinggi penuh untuk body */
       background-color: black;
-      /* Pastikan latar belakang berwarna hitam */
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+
+    body.fade-out {
+      opacity: 0;
     }
 
     .button {
       opacity: 1;
-      /* Mulai dengan opasitas 1 */
       transition: opacity 1s ease;
-      /* Durasi transisi */
     }
 
     .button.hide {
-      opacity: 0;
-      /* Menghilangkan tombol */
       pointer-events: none;
-      /* Menghindari interaksi saat tombol disembunyikan */
     }
   </style>
 </head>
@@ -44,7 +42,9 @@
         <div class="text-center">
           <h1 class="mx-auto my-0 text-uppercase">Khodam</h1>
           <h2 class="text-white-50 mx-auto mt-2 mb-5">Cek Khodam Online (Just for Fun Purpose)</h2>
-          <a class="btn btn-primary button" href="login.php" onclick="fadeOut(event, 'login.php')">Login</a>
+          <!-- Tombol Login tanpa efek fade-out -->
+          <a class="btn btn-primary button" href="login.php">Login</a>
+          <!-- Tombol Register dengan efek fade-out -->
           <a class="btn btn-primary button" href="registrasi.php" onclick="fadeOut(event, 'registrasi.php')">Register</a>
         </div>
       </div>
@@ -53,18 +53,14 @@
 
   <script>
     function fadeOut(event, url) {
-      event.preventDefault(); // Hentikan tautan agar tidak langsung berpindah halaman
-      const buttons = document.querySelectorAll('.button');
-      buttons.forEach(button => {
-        button.classList.add('hide'); // Menghilangkan tombol terlebih dahulu
-      });
+      event.preventDefault(); // Mencegah langsung berpindah halaman
+      document.body.classList.add('fade-out'); // Tambahkan kelas 'fade-out' ke body
 
       setTimeout(() => {
-        window.location.href = url; // Pindah ke halaman setelah tombol dihilangkan
-      }, 10); // Waktu delay yang sama dengan durasi transisi
+        window.location.href = url; // Pindah ke halaman setelah transisi selesai
+      }, 1000); // Tunggu 1 detik sebelum berpindah halaman (durasi transisi)
     }
   </script>
-
 </body>
 
 </html>

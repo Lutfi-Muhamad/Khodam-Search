@@ -1,43 +1,3 @@
-<?php
-session_start(); // Memulai session
-
-// Cek apakah user sudah login (hanya contoh sederhana, sesuaikan dengan sistem login)
-if (!isset($_SESSION['username'])) {
-    $_SESSION['username'] = 'guest'; // Set username sebagai guest jika belum login
-}
-
-// Folder tempat menyimpan gambar
-$imageFolder = 'assets/kodam/';
-
-// Dapatkan semua file gambar dari folder
-$images = glob($imageFolder . "*.{jpg,png,gif,jpeg}", GLOB_BRACE);
-
-// Default image sebelum pencarian
-$imageToShow = 'assets/default.jpg'; // Default image jika tidak ada gambar yang dicari
-$khodamText = ''; // Variabel untuk menyimpan teks khodam
-$showModal = false; // Variabel untuk menentukan apakah modal akan ditampilkan
-
-// Proses ketika tombol "Cari" ditekan
-if (isset($_POST['query']) && !empty($_POST['query'])) {
-    $query = $_POST['query']; // Ambil query dari input pencarian
-
-    // Jika ada gambar di folder, pilih satu secara acak
-    if ($images) {
-        $randomImage = $images[array_rand($images)]; // Memilih gambar acak
-        $_SESSION['randomImage'] = $randomImage; // Simpan gambar acak di session
-    }
-
-    // Tentukan gambar yang akan ditampilkan setelah pencarian
-    $imageToShow = $_SESSION['randomImage'] ?? 'assets/default.jpg';
-
-    // Menyusun teks khodam
-    $khodamText = htmlspecialchars($query) . " khodam yang ada pada kamu adalah:";
-
-    // Setel flag modal untuk menampilkan modal setelah pemilihan gambar
-    $showModal = true;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -52,54 +12,44 @@ if (isset($_POST['query']) && !empty($_POST['query'])) {
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet" />
     <link href="styles/style.css" rel="stylesheet" />
     <style>
-        /* CSS untuk elemen h1 dan h2 tanpa transisi */
+        /* CSS untuk elemen h1 dan h2 */
         .header-text {
-            transform: translateY(-31px);
-            /* Posisi akhir yang diinginkan */
+            transform: translateY(98px);
             opacity: 1;
-            /* Opasitas akhir */
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
-        /* CSS untuk form login tanpa transisi */
+        .header-text.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* CSS untuk form login */
         .login-form {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .login-form.show {
+            display: block;
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Modal styling */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
+        /* CSS untuk transisi fade-out */
+        .exit {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
         }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+        /* CSS untuk posisi naik input password dan tombol */
+        .shift-up {
+            transform: translateY(-31px);
+            /* Naikkan 30px */
+            transition: transform 0.5s ease;
+            /* Durasi transisi */
         }
     </style>
 </head>
@@ -114,42 +64,109 @@ if (isset($_POST['query']) && !empty($_POST['query'])) {
                     <!-- Form Login -->
                     <form class="login-form" method="POST" action="">
                         <div class="form-outline mb-4">
-                            <input type="text" name="query" class="form-control" placeholder="Masukkan Nama Kamu" required>
+                            <input type="text" id="username" name="username" class="form-control" placeholder="Enter username" required />
+                        </div>
+
+                        <div class="form-outline mb-4">
+                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required />
                         </div>
 
                         <div class="text-center pt-1 mb-5 pb-1">
-                            <button id="login-button" class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit" name="login">cari</button>
+                            <button id="login-button" class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit" name="login">Log in</button>
                         </div>
                     </form>
+                    <?php
+                    session_start(); // Memulai session
 
-                    <!-- Menampilkan teks khodam jika ada -->
+                    if (isset($_POST['login'])) {
+                        $username = $_POST['username'];
+                        $password = $_POST['password'];
 
+                        // Cek apakah username dan password sesuai
+                        if ($username === 'admin' && $password === 'admin') {
+                            // Jika sesuai, simpan username dalam session dan arahkan ke dashboard.php
+                            $_SESSION['username'] = $username;
+                            echo "<script>fadeOutAndRedirect();</script>";
+                        } else {
+                            // Jika tidak sesuai, tampilkan pesan kesalahan
+                            echo "<div class='alert alert-danger text-center'>Username atau password salah!</div>";
+                        }
+                    }
+                    ?>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Modal -->
-    <div id="khodamModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Gambar Khodam</h2>
-            <img id="modalImage" src="<?php echo htmlspecialchars($imageToShow); ?>" alt="Gambar Khodam" style="width: 100%; height: auto;">
-        </div>
-    </div>
-
     <script>
-        function closeModal() {
-            document.getElementById('khodamModal').style.display = "none";
+        // Tambahkan kelas fade-in saat halaman dimuat
+        window.onload = function() {
+            document.body.classList.add('fade-in');
+
+            // Tampilkan h1 dan h2 dengan transisi setelah fade in selesai
+            setTimeout(() => {
+                const headers = document.querySelectorAll('.header-text');
+                headers.forEach(header => {
+                    header.classList.add('show');
+                });
+
+                // Tampilkan form login setelah h1 dan h2 ditampilkan
+                setTimeout(() => {
+                    const loginForm = document.querySelector('.login-form');
+                    loginForm.classList.add('show');
+                }, 500); // Tunda 500ms setelah h1 dan h2 ditampilkan
+            }, 2000); // Tunda 2 detik sebelum menampilkan h1 dan h2
         }
 
-        window.onload = function() {
-            // Tampilkan modal setelah pencarian
-            <?php if ($showModal): ?>
-                document.getElementById('khodamModal').style.display = "block";
-            <?php endif; ?>
+        // Fungsi untuk transisi keluar (animasi saat login berhasil)
+        function fadeOutAndRedirect() {
+            const usernameInput = document.querySelector('#username');
+            const passwordInput = document.querySelector('#password');
+            const loginButton = document.querySelector('#login-button');
+            const headers = document.querySelectorAll('.header-text');
+
+            // Tambahkan kelas exit untuk animasi keluar (input username)
+            usernameInput.classList.add('exit');
+
+            // Tunggu sedikit agar username menghilang
+            setTimeout(() => {
+                // Tambahkan kelas shift-up untuk menaikkan posisi input password dan tombol
+                passwordInput.classList.add('shift-up');
+                loginButton.classList.add('shift-up');
+
+                // Ubah teks tombol menjadi "Cari"
+                loginButton.textContent = "Cari";
+
+                // Tambahkan kelas exit untuk animasi keluar (h1, h2)
+                headers.forEach(header => {
+                    header.classList.add('exit');
+                });
+
+                // Tunggu hingga transisi selesai (1.5 detik), lalu arahkan ke dashboard.php
+                setTimeout(() => {
+                    window.location.href = 'dashboard.php';
+                }, 1500);
+            }, 500); // Tunda 500ms untuk memberikan waktu pada username menghilang
         }
+
+        // Menangani form submit
+        document.querySelector('.login-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Mencegah form dari pengiriman default (biar transisi bisa terlihat dulu)
+
+            const username = document.querySelector('#username').value;
+            const password = document.querySelector('#password').value;
+
+            // Cek apakah username dan password benar
+            if (username === 'admin' && password === 'admin') {
+                // Jika benar, jalankan transisi keluar dan kemudian redirect
+                fadeOutAndRedirect();
+            } else {
+                // Jika salah, tampilkan pesan kesalahan
+                alert('Username atau password salah!');
+            }
+        });
     </script>
+
 </body>
 
 </html>
